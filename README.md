@@ -1,4 +1,4 @@
-# CentosAD
+# Ingressar centos 6 & 7 no dominio utilizando openvpn Sophos
 
   O script sera disponibilizado em modulos, caso você queira utiliza-los individualmente sugiro que siga as intruções e modifique de acordo com a necessidade de sua infraestrutura!
   
