@@ -1,0 +1,70 @@
+#!/bin/bash
+
+PATH=/usr/sbin:/usr/local/bin:/usr/bin:/bin:/sbin
+export PATH
+
+##############################################################################
+## UpdateDns
+## Written by: Lucas Santiago <ti.lucassantiago@gmail.com>
+## 
+## License:
+##  UpdateDns (hereafter referred to as "program") is free software;
+##  you can redistribute it and/or modify it under the terms of the GNU General
+##  Public License as published by the Free Software Foundation; either version
+##  2 of the License, or (at your option) any later version.
+##  When redistributing modified versions of this source code it is recommended
+##  that that this disclaimer and the above coder's names are included in the
+##  modified code.
+##
+## Disclaimer:
+##  This program is provided with no warranty of any kind, either expressed or
+##  implied.  It is the responsibility of the user (you) to fully research and
+##  comprehend the usage of this program.  As with any tool, it can be misused,
+##  either intentionally (you're a vandal) or unintentionally (you're a moron).
+##  THE AUTHOR(S) IS(ARE) NOT RESPONSIBLE FOR ANYTHING YOU DO WITH THIS PROGRAM
+##  or anything that happens because of your use (or misuse) of this program,
+##  including but not limited to anything you, your lawyers, or anyone else
+##  can dream up.  And now, a relevant quote directly from the GPL:
+##
+## NO WARRANTY
+##
+##  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+##  FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+##  OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+##  PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+##  OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+##  TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+##  PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+##  REPAIR OR CORRECTION.
+##
+##############################################################################
+
+
+#### ATENÇÃO ####
+
+##Descomente as linhas que possuirem apenas um # e coloque de acordo com a sua infraestrutura
+
+## IP QUE SERÁ ATRELADO A O DNS
+## COLOCAR O IP QUE DESEJA QUE ELE AMARZENE NA VARIÁVEL
+
+#INTERFACE=`ip a |  grep "IP DA SUA INTERFACE" | awk '{print $2}' | awk -F'/' '{print $1}'`
+HOSTNAME=`hostname`
+
+echo -n "$INTERFACE"
+echo ""
+echo "$HOSTNAME"
+
+echo "" > dns_update.txt
+
+## SETAR O DOMÍNIO
+
+#echo "
+#update delete $HOSTNAME.DOMINIO A $INTERFACE
+#update add $HOSTNAME.DOMINIO 3600 A $INTERFACE
+#send
+#" > dns_update.txt
+
+nsupdate dns_update.txt
+
+exit 0
