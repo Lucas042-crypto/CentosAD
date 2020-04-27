@@ -1,0 +1,158 @@
+
+#!/bin/bash
+##############################################################################
+## CentosAD
+## Written by: Lucas Santiago <ti.lucassantiago@gmail.com>
+## 
+## License:
+##  CentosAD (hereafter referred to as "program") is free software;
+##  you can redistribute it and/or modify it under the terms of the GNU General
+##  Public License as published by the Free Software Foundation; either version
+##  2 of the License, or (at your option) any later version.
+##  When redistributing modified versions of this source code it is recommended
+##  that that this disclaimer and the above coder's names are included in the
+##  modified code.
+##
+## Disclaimer:
+##  This program is provided with no warranty of any kind, either expressed or
+##  implied.  It is the responsibility of the user (you) to fully research and
+##  comprehend the usage of this program.  As with any tool, it can be misused,
+##  either intentionally (you're a vandal) or unintentionally (you're a moron).
+##  THE AUTHOR(S) IS(ARE) NOT RESPONSIBLE FOR ANYTHING YOU DO WITH THIS PROGRAM
+##  or anything that happens because of your use (or misuse) of this program,
+##  including but not limited to anything you, your lawyers, or anyone else
+##  can dream up.  And now, a relevant quote directly from the GPL:
+##
+## NO WARRANTY
+##
+##  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+##  FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+##  OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+##  PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+##  OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+##  TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+##  PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+##  REPAIR OR CORRECTION.
+##
+##############################################################################
+
+
+#### ATENÇÃO ####
+
+##Descomente as linhas que possuirem apenas um # e coloque de acordo com a sua infraestrutura
+
+yum -y install epel-release
+
+# INSTALA AS DEPENDENCIAS
+
+yum -y install rootsh adcli samba-common oddjob-mkhomedir oddjob samba-winbind-clients samba-winbind sssd pam_krb5 krb5-workstation krb5-libs krb5-auth-dialog authconfig ntpdate cowsay ntp
+
+## INCLUI NOME DO AD NO ARQUIVO HOSTS
+## COLOCAR IP E NOME DO SERVIDOR ACTIVE DIRECTORY
+
+#echo "IP NOME" >> /etc/hosts
+
+## CONFIGURA O RESOLV
+## SETAR O DOMÍNIO e IP
+
+echo "" > /etc/resolv.conf
+
+#echo "search DOMINIO
+#nameserver IP
+#nameserver 8.8.8.8" > /etc/resolv.conf
+
+ping virtualsistemas.local  -w 5
+
+## CONFIGURA O KEBEROS
+## PARA A INCLUSÃO DA MÁQUINA NO AD É NECESSARIO QUE A HORA DOS SERVIDORES ESTEJAM ALINHADOS
+
+#ntpdate DOMÍNIO
+
+rm -rf /etc/krb5.*
+
+
+#authconfig --enablekrb5 --krb5kdc=DOMINIO --krb5adminserver=DOMINIO --krb5realm=DOMINIO(MAIUSCULO) --enablesssd --enablesssdauth --update
+
+## INGRESSANDO NO DOMINIO DE ACORDO COM A VERSAO DO CENTOS
+
+
+VERSAO=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
+
+if [ $VERSAO == '7' ]
+
+	then
+
+yum install realmd -y
+
+sleep 5
+
+systemctl restart dbus
+
+## INGRESSAR A MÁQUINA NO DOMINIO
+## SETAR O USUÁRIO QUE POSSUI A PERMISSAO PARA INGRESSAR AS MAQUINAS NO DOMINIO E COLOCAR O DOMINIO
+
+#realm join --client-software=sssd -U USUÁRIO(AD)  DOMINIO
+
+else
+
+	
+#adcli join -U  USUÁRIO(AD) DOMINIO
+	
+
+	fi
+
+## CONFIGURANDO O METODO DE AUTENTICAÇÃO VIA SSSD
+## ALTERA O DOMINIO
+
+touch /etc/sssd/sssd.conf
+
+#echo "
+#[sssd]
+#domains = DOMINIO
+#config_file_version = 2
+#services = nss, pam
+
+#[domain/DOMINIO]
+#ad_domain = DOMINIO
+#krb5_realm = DOMINIO(MAIUSCULO)
+#realmd_tags = manages-system joined-with-samba
+#cache_credentials = True
+#id_provider = ad
+#krb5_store_password_if_offline = True
+#default_shell = /bin/bash
+#ldap_id_mapping = True
+#use_fully_qualified_names = False
+#fallback_homedir = /home/%u@%d
+#access_provider = ad " > /etc/sssd/sssd.conf
+
+chmod 600 /etc/sssd/sssd.conf
+
+
+# ARQUIVOS DE CONFIGURAÇÃO
+
+echo "session     optional      pam_mkhomedir.so skel=/etc/skel umask=077" >> /etc/pam.d/system-auth
+echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" >> /etc/pam.d/sshd  
+
+## PERMISSÃO DE SUPER USUÁRIO
+## CRIAR GRUPOS NO AD QUE TERAM PERMISSAO DE ROOT NAS MAQUINAS
+
+#echo "%suporte  ALL=(ALL)     NOPASSWD: ALL" >> /etc/sudoers
+#echo "%desenvolvimento  ALL=(ALL)     NOPASSWD: ALL" >> /etc/sudoers
+
+
+# INICIANDO OS SERVIÇOS
+
+if [ $VERSAO == '7' ]
+
+        then
+
+systemctl restart sssd && systemctl enable sssd && systemctl restart winbind.service && systemctl enable winbind.service && systemctl enable ntpd && systemctl start  ntpd && systemctl restart systemd-logind
+
+else
+
+service sssd start && chkconfig sssd on && service winbind start && chkconfig winbind on && service restart sshd
+
+fi
+
+exit 0
