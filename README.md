@@ -34,6 +34,16 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
   Ao remove-la o arquivo sshd.conf, fica com a linha "use_fully_qualified_names = True" troque para "use_fully_qualified_names = False", pois assim poderam logar sem declarar o domínio
  
    O netbios do windows aceita até 14 caracteres, não colocar mais que isso, pois irá comprometer o arquivo do kerberos, é uma chave criptografada para cominição entre o cliente e o domínio.
+  
+   O resolv.conf deverá estar apontando para o seu dominio, se estiver incorreto não irá funcionar:
+   
+   Exemplo:
+   
+   vim /etc/resolv.conf
+    
+    search DOMINIO
+    nameserver IP
+    nameserver 8.8.8.8
    
    COMANDOS ÚTEIS:
   
@@ -45,7 +55,11 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
    
   Klist
 
+
 # Entrada Dns 
+
+* Primeiro faça as adequações necessárias no script. (instruções de uso no script);
+
 
 
 # Membros do Projeto
