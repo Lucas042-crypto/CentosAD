@@ -50,8 +50,8 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
 
 # Membros do Projeto
 
-https://www.linkedin.com/in/joao-paulo/
-https://www.linkedin.com/in/jeffersongoliveira/
-https://www.linkedin.com/in/lucaslimasantiago
+* João Paulo: https://www.linkedin.com/in/joao-paulo/
+* Jefferson Oliveira: https://www.linkedin.com/in/jeffersongoliveira/
+* Lucas Santiago: https://www.linkedin.com/in/lucaslimasantiago
 
 
