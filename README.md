@@ -35,5 +35,14 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
  
    O netbios do windows aceita até 14 caracteres, não colocar mais que isso, pois irá comprometer o arquivo do kerberos, é uma chave criptografada para cominição entre o cliente e o domínio.
    
+   COMANDOS ÚTEIS:
+  
+  Verificar se está logando no dominio:
+  
+  kinit usuário (AD)
+   
+   Verificar se o dominio esta configurado corretamente:
+   
+  Klist
 
 # Entrada Dns 
