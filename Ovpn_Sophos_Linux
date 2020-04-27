@@ -1,0 +1,161 @@
+#!/bin/bash
+##############################################################################
+## Ovpn_Sophos_Linux
+## Written by: Lucas Santiago <ti.lucassantiago@gmail.com>
+## 
+## License:
+##  Ovpn_Sophos_Linux (hereafter referred to as "program") is free software;
+##  you can redistribute it and/or modify it under the terms of the GNU General
+##  Public License as published by the Free Software Foundation; either version
+##  2 of the License, or (at your option) any later version.
+##  When redistributing modified versions of this source code it is recommended
+##  that that this disclaimer and the above coder's names are included in the
+##  modified code.
+##
+## Disclaimer:
+##  This program is provided with no warranty of any kind, either expressed or
+##  implied.  It is the responsibility of the user (you) to fully research and
+##  comprehend the usage of this program.  As with any tool, it can be misused,
+##  either intentionally (you're a vandal) or unintentionally (you're a moron).
+##  THE AUTHOR(S) IS(ARE) NOT RESPONSIBLE FOR ANYTHING YOU DO WITH THIS PROGRAM
+##  or anything that happens because of your use (or misuse) of this program,
+##  including but not limited to anything you, your lawyers, or anyone else
+##  can dream up.  And now, a relevant quote directly from the GPL:
+##
+## NO WARRANTY
+##
+##  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+##  FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+##  OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+##  PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+##  OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+##  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+##  TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+##  PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+##  REPAIR OR CORRECTION.
+##
+##############################################################################
+
+
+#### ATENÇÃO ####
+
+##Descomente as linhas que possuirem apenas um # e coloque de acordo com a sua infraestrutura
+
+## Usuário e senha criados no sophos 
+
+cod()
+{
+	clear
+		read -p "COLOCAR O USUARIO DO SOPHOS: " CLIENTE
+		echo ""
+		read -p "COLOCAR A SENHA DO USUARIO: " PASS
+}
+
+while true; do
+cod
+if [[ ("$CLIENTE" != "") && ("$PASS" != "") ]]; then
+
+
+## Verificação de existencia do arquivo
+
+if [ ! -d "/tmp/$CLIENTE" ]; then
+
+mkdir /tmp/$CLIENTE
+echo "CRIA A PASTA PARA O CERTIFICADO DO CLIENTE"	
+
+else
+echo ""
+echo "CLIENTE JA POSSUI CERTIFICADO"
+echo ""
+echo "CAMINHO: /tmp/$CLIENTE"
+sleep 4
+exit 0
+fi
+
+## O sophos não cria o arquivo ovpn conforme precisamos!
+## Solução:
+## O sophos cria as chaves logo após entrar no portal do usuário e baixar o arquivo a partir do link " Fazer o Download de Configuração para outros OSs"
+## Nessa parte você precisará do usuário,IP,diretorio que ele salva as keys zipadas, neste caso foi /conf/certificate/
+## Obs: Acredito que o caminho não muda!
+
+
+echo "COPIA OS CERTIFICADOS DO SOPHOS"
+
+## Instalar o sshpass no host!
+
+#sshpass -p 'PASSWORD' scp admin@(IP):/conf/certificate/$CLIENTE* /tmp/$CLIENTE
+
+echo "DESCOMPACTA A PASTA"
+
+cd /tmp/$CLIENTE
+
+tar -zxvf *.tar.gz
+
+echo "MODIFICANDO O NOME DA PASTA"
+
+RESULT=`ls -l | grep "^d" | cut -c42-90`
+
+mv $RESULT certificados
+
+echo "GERANDO O ARQUIVO OVPN"
+
+## Entra na pasta compactada e reescreve o arquivo ovpn a partir das chaves descompactadas
+
+cd /tmp/$CLIENTE/certificados/pem
+
+## Gera o arquivo pass.txt - Armazena o usuário e a senha do usuário criado no sophos
+
+echo "$CLIENTE" >> pass.txt
+echo "$PASS" >> pass.txt
+
+echo "client
+dev tun
+proto udp
+explicit-exit-notify
+verify-x509-name 'C=BR, ST=SP, L=Sao Paulo, O=Audere Comercio Em Tecnologia Da Informação, OU=OU, CN=SophosApplianceCertificate_C23076HQQMQBB04, emailAddress=suporte@audere.com.br'
+route remote_host 255.255.255.255 net_gateway
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+" >> $CLIENTE.ovpn
+echo "<ca>" >> $CLIENTE.ovpn
+cat RootCertificate.pem >> $CLIENTE.ovpn
+echo "</ca>" >> $CLIENTE.ovpn
+echo "<cert>" >> $CLIENTE.ovpn
+cat UserCertificate.pem >> $CLIENTE.ovpn
+echo "</cert>" >> $CLIENTE.ovpn
+echo "<key>" >> $CLIENTE.ovpn
+cat UserPrivateKey.key >> $CLIENTE.ovpn
+echo "</key>" >> $CLIENTE.ovpn
+
+## O arquivo ovpn do sophos não fornece esses parametros preenchidos!
+## auth-user-pass pass.txt
+## comp-lzo yes
+
+echo "auth-user-pass pass.txt
+cipher AES-128-CBC
+auth SHA256
+comp-lzo yes
+route-delay 4
+verb 3
+reneg-sec 0
+remote 200.201.217.218 1194
+remote 172.16.11.254 1194
+remote 10.10.10.253 1194
+" >> $CLIENTE.ovpn
+
+mv $CLIENTE.ovpn $CLIENTE.conf
+
+tar -zcvf $CLIENTE.tar.gz $CLIENTE.conf pass.txt
+
+## Colocar o novo destino (De preferência a algum serviço web)
+## Sugestão apache 
+
+#mv $CLIENTE.tar.gz DESTINO DO NOVO ARQUIVO
+
+exit 0
+
+fi
+done
+
