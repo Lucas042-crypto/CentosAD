@@ -132,6 +132,7 @@ echo "</key>" >> $CLIENTE.ovpn
 ## O arquivo ovpn do sophos não fornece esses parametros preenchidos!
 ## auth-user-pass pass.txt
 ## comp-lzo yes
+## Colocar IP e Porta (Server que o cliente irá se conectar)
 
 echo "auth-user-pass pass.txt
 cipher AES-128-CBC
@@ -140,9 +141,7 @@ comp-lzo yes
 route-delay 4
 verb 3
 reneg-sec 0
-remote 200.201.217.218 1194
-remote 172.16.11.254 1194
-remote 10.10.10.253 1194
+remote iP Porta
 " >> $CLIENTE.ovpn
 
 mv $CLIENTE.ovpn $CLIENTE.conf
