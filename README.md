@@ -59,8 +59,11 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
 # Entrada Dns 
 
 * Primeiro faça as adequações necessárias no script. (instruções de uso no script);
+* Copiar o script dentro de /usr/local/sbin/
+* Criar o arquivo: dns_update.txt utilize o camando touch dns_update.txt
+* Execute e verifique se a entrada foi criada
 
-
+Obs: Criar uma rotina no crontab, para manter a zona dns sempre atualizado.
 
 # Membros do Projeto
 
