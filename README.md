@@ -46,3 +46,12 @@ Obs: Não esqueça de reiniciar os serviços sssd e winbind
   Klist
 
 # Entrada Dns 
+
+
+# Membros do Projeto
+
+https://www.linkedin.com/in/joao-paulo/
+https://www.linkedin.com/in/jeffersongoliveira/
+https://www.linkedin.com/in/lucaslimasantiago
+
+
